@@ -1,0 +1,5 @@
+# springboot多环境配置
+spring:
+  profiles:
+    # dev 开发环境、local 本地环境、pro 生产环境
+    active: local

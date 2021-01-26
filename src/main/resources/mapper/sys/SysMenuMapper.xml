@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shiro.logical.sys.dao.SysMenuMapper">
+
+    <!--根据登录名、手机号查询用户授权菜单-->
+    <select id="selectUserMenuByLoninName" resultType="java.util.Map">
+        SELECT DISTINCT
+            sm.id,
+            sm.sort,
+            sm.menu_name AS menuName,
+            sm.parent_id AS parentId,
+            sm.parent_ids AS parentIds,
+            sm.permission
+        FROM
+            sys_user sy
+            LEFT JOIN sys_user_role sur ON sy.id = sur.user_id
+            LEFT JOIN sys_role sr ON sr.id = sur.role_id
+            LEFT JOIN sys_role_menu srt ON srt.role_id = sr.id
+            LEFT JOIN sys_menu sm ON sm.id = srt.menu_id
+        WHERE
+            sm.del_flag = '0'
+            AND sm.is_show = '0'
+            AND sr.is_forbidden = '0'
+            AND sr.del_flag = '0'
+            AND sy.id  = (SELECT id FROM sys_user WHERE del_flag = '0' AND (login_name = #{loginName,jdbcType=VARCHAR} OR phone = #{loginName,jdbcType=VARCHAR}))
+        ORDER BY
+            sm.sort ASC
+    </select>
+</mapper>

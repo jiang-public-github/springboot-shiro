@@ -1,0 +1,105 @@
+# application.yml 本地环境配置
+server:
+  port: 1234
+  servlet:
+    context-path: /
+    session:
+      timeout: 7200s
+  tomcat:
+    uri-encoding: UTF-8
+
+# swagger 配置
+knife4j:
+  production: false # 是否屏蔽接口文档
+  basic: # 开启Swagger的Basic认证功能,默认是false
+    enable: true
+    username: admin
+    password: admin123456
+  enable: true
+  setting:
+    enableVersion: true  # 是否开启界面中对某接口的版本控制,如果开启，后端接口变化后Ui界面会存在小蓝点
+    enableAfterScript: true # 是否显示调试栏中的AfterScript功能，该属性默认为true
+    enableSwaggerModels: true # 是否显示界面的Models
+    swaggerModelName: 实体类列表 # 命名界面Swagger Models的命名
+    enableReloadCacheParameter: true # 增加局部刷新变量的按钮功能，可以通过服务端配置开启Gitee #I22XXI，该属性默认为false
+    enableOpenApi: false # 是否显示文档中的Open标签栏，默认为true
+    enableSearch: true # 是否显示文档中的搜索框，默认为true，即显示
+    enableDebug: true # 是否启用调试功能,默认值为true(代表开启调试)，如果要禁用调试，该值设为false
+    enableFooter: false # 是否不显示Knife4j默认的footer，默认为true(显示)
+    enableFooterCustom: true # 是否自定义Footer，默认为false(非自定义)
+    footerCustomContent: Copyright © 贵州志诚慧远信息科技有限公司 # 自定义Footer内容,支持Markdown语法
+
+
+# 数据源配置
+spring:
+  application:
+    name: reports
+  datasource:
+    url: jdbc:mysql://localhost:3307/shiro?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&rewriteBatchedStatements=true
+    username: root
+    password: AdminRoot000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      initial-size: 5 # 初始化时建立物理连接的个数
+      min-idle: 5 # 最小连接池数量
+      max-active: 20 # 最大连接池数量
+      max-wait: 60000 # 获取连接时最大等待时间
+      time-between-eviction-runs-millis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      min-evictable-idle-time-millis: 30000 # 配置一个连接在池中最小生存的时间，单位是毫秒
+      validation-query: SELECT 1 FROM DUAL # 检测连接是否有效的sql
+      test-while-idle: true
+      test-on-borrow: true # 申请连接时执行validationQuery检测连接是否有效
+      test-on-return: false # 归还连接时执行validationQuery检测连接是否有效
+      pool-prepared-statements: true # 是否缓存preparedStatements
+      max-pool-prepared-statement-per-connection-size: 20
+      # 配置监控统计拦截的filters，去掉后，监控界面的sql无法统计，'wall'用于防火墙
+      filters: stat,wall,log4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 配置监控服务器
+      stat-view-servlet:
+        enabled: true # 是否开启访问监控页面
+        login-username: admin
+        login-password: admin123456
+        #页面数据重置 false 就是无法重置
+        reset-enable: false
+        url-pattern: /druid/*
+        # 添加IP白名单
+        #allow: 127.0.0.1,192.168.163.1
+        # 添加IP黑名单，当白名单和黑名单重复时，黑名单优先级更高
+        #deny: 192.168.1.73
+      web-stat-filter:
+        # 添加过滤规则
+        url-pattern: /*
+        # 忽略过滤格式
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+
+
+  # 当遇到同样名字的时候，是否允许覆盖注册
+  main:
+    allow-bean-definition-overriding: true
+
+  #日期格式化
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+  #静态资源的配置
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static/
+
+
+# mybatis-plus相关配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*/*.xml
+  global-config:
+    id-type: uuid
+    field-strategy: not_empty
+    column-underline: true
+    db-type: mysql
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
