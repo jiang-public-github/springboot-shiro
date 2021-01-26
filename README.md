@@ -5,7 +5,7 @@
 ## 核心技术选型
 
 * 核心框架：springboot 2.3.5
-* 安全框架：Apache Shiro 1.2
+* 安全框架：Apache Shiro 1.7.0
 * 持久层框架：mybatisPlus 3.4.2
 * 缓存框架：Ehcache 2.10.6
 
