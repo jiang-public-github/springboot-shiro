@@ -1,12 +1,13 @@
 
 ## 简介
-Java语言 基于springboot + shiro + mybatisplus 搭建的安全框架demo
+基于Java语言使用springboot + shiro + mybatisplus搭建的安全框架demo
 
 ## 核心技术选型
 
 * 核心框架：springboot 2.3.5
 * 安全框架：Apache Shiro 1.2
 * 持久层框架：mybatisPlus 3.4.2
+* 缓存框架：Ehcache 2.10.6
 
 ## 安全考虑
 yml配置文件的一些账号密码等敏感信息用jasypt加了密，本地application-local.yml除外。
