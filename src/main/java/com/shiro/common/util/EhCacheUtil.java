@@ -63,7 +63,7 @@ public class EhCacheUtil {
      * @param key
      * @param value
      */
-    public static void put(String cacheName, String key, Object value) {
+    public void put(String cacheName, String key, Object value) {
         Element element = new Element(key, value);
         getCache(cacheName).put(element);
     }

@@ -1,25 +1,21 @@
 package com.shiro.logical.sys.web;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
+import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.shiro.common.returns.JsonResult;
 import com.shiro.common.returns.ResultCode;
 import com.shiro.common.util.EhCacheUtil;
-import com.shiro.logical.sys.entity.SysUser;
 import com.shiro.logical.sys.service.ISysUserService;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.subject.Subject;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.security.Principal;
 
 /**
  * <p>
@@ -39,8 +35,8 @@ public class SysUserController {
 
 
     @DynamicParameters(properties = {
-            @DynamicParameter(name = "loginName", value = "用户名", required = true, dataTypeClass = String.class),
-            @DynamicParameter(name = "password", value = "用户密码", required = true, dataTypeClass = String.class),
+            @DynamicParameter(name = "loginName", value = "用户名", required = true, example = "admin", dataTypeClass = String.class),
+            @DynamicParameter(name = "password", value = "用户密码", required = true, example = "123456", dataTypeClass = String.class),
     })
     @ApiOperation(value = "用户登录")
     @PostMapping(value = "/login")

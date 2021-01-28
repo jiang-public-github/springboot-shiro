@@ -1,8 +1,8 @@
 package com.shiro.logical.shiro;
 
-import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
-import org.apache.shiro.crypto.hash.Md5Hash;
+import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
+import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
+import javax.servlet.Filter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,10 +41,18 @@ public class ShiroConfig {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //设置安全管理器
         shiroFilterFactoryBean.setSecurityManager(securityManager);
+
+        // 添加jwt过滤器，并在下面注册
+        Map<String, Filter> jwtMap = new HashMap<>(1);
+        jwtMap.put("jwt", new JwtFilter());
+        shiroFilterFactoryBean.setFilters(jwtMap);
+
         //配置Shiro过滤器
         Map<String, String> filterMap  = new LinkedHashMap<>();
+        // 过滤链定义，从上向下顺序执行，一般将/**放在最为下边
         // authc: 所有url都必须认证通过才可以访问; anon: 所有url都都可以匿名访问;
         // user: 如果使用rememberMe的功能可以直接访问; perms: 该资源必须得到资源访问权限才可以使用; role: 该资源必须得到角色授权才可以使用
+        filterMap.put("/favicon.ico", "anon");
         filterMap.put("/swagger**/**", "anon");
         filterMap.put("/webjars/**", "anon");
         filterMap.put("/v2/**", "anon");
@@ -52,10 +62,9 @@ public class ShiroConfig {
         filterMap.put("/static/**", "anon");
         // 所有url都必须认证通过才可以访问
         filterMap.put("/**", "authc");
-        // 配置shiro默认的登录地址，前后端分离的模式中，跳转由前端控制，后台仅返回json数据
-        shiroFilterFactoryBean.setLoginUrl("/a/sys/url/unauth");
-        // 登录成功后要跳转的链接, 此项目是前后端分离，故此行注释掉。
-//        shiroFilterFactoryBean.setSuccessUrl("/index");
+        // 所有请求通过我们自己的JWT Filter
+        filterMap.put("/**", "jwt");
+
         // 未授权界面 ,此处不生效,一般自定义异常
         shiroFilterFactoryBean.setUnauthorizedUrl("/403");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterMap);
@@ -69,11 +78,13 @@ public class ShiroConfig {
      */
     @Bean
     public SecurityManager securityManager() {
-        // SystemRealm 注入到 DefaultWebSecurityManager bean 中，完成注册。
         DefaultWebSecurityManager defaultSecurityManager = new DefaultWebSecurityManager();
+        // 注入SystemRealm
         defaultSecurityManager.setRealm(SystemRealm());
-        //注入缓存对象
+        // 注入缓存对象
         defaultSecurityManager.setCacheManager(ehCacheManager());
+        // 注入关闭session
+        defaultSecurityManager.setSubjectDAO(subjectDAO());
         return defaultSecurityManager;
     }
 
@@ -85,26 +96,7 @@ public class ShiroConfig {
     public SystemRealm SystemRealm(){
         // 自定义过滤器SystemRealm， 业务逻辑全部定义在这个 bean 中
         SystemRealm systemRealm = new SystemRealm();
-        // 加入凭证匹配器
-        systemRealm.setCredentialsMatcher(hashedCredentialsMatcher());
         return systemRealm;
-    }
-
-    /**
-     * 凭证匹配器
-     * 由于我们的密码校验交给Shiro的SimpleAuthenticationInfo进行处理了，所以我们需要修改下doGetAuthenticationInfo中的代码
-     * @return
-     */
-    @Bean
-    public HashedCredentialsMatcher hashedCredentialsMatcher() {
-        HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
-        // 散列算法:这里使用MD5算法;
-        hashedCredentialsMatcher.setHashAlgorithmName(Md5Hash.ALGORITHM_NAME);
-        // 散列的次数，比如散列两次，相当于 md5(md5(""));
-        hashedCredentialsMatcher.setHashIterations(2);
-        // storedCredentialsHexEncoded默认是true，此时用的是密码加密用的是Hex编码；false时用Base64编码
-        hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
-        return hashedCredentialsMatcher;
     }
 
     /**
@@ -134,18 +126,6 @@ public class ShiroConfig {
     }
 
     /**
-     * 自定义sessionManager
-     * @return
-     */
-    @Bean
-    public SessionManager sessionManager() {
-        SessionManager mySessionManager = new SessionManager();
-        // 设置session过期时间3600s
-        mySessionManager.setGlobalSessionTimeout(3600000L);
-        return mySessionManager;
-    }
-
-    /**
      * Shiro生命周期处理器:
      */
     @Bean
@@ -163,4 +143,21 @@ public class ShiroConfig {
         ehCacheManager.setCacheManagerConfigFile("classpath:config/ehcache-shiro.xml");
         return ehCacheManager;
     }
+
+    /**
+     * 关闭shiro自带的session
+     * @return
+     */
+    @Bean
+    public DefaultSubjectDAO subjectDAO() {
+        // 关闭 ShiroDAO 功能
+        DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
+        DefaultSessionStorageEvaluator defaultSessionStorageEvaluator = new DefaultSessionStorageEvaluator();
+        // 不需要将 Shiro Session 中的东西存到任何地方（包括 Http Session 中）
+        defaultSessionStorageEvaluator.setSessionStorageEnabled(false);
+        subjectDAO.setSessionStorageEvaluator(defaultSessionStorageEvaluator);
+        return subjectDAO;
+    }
+
+
 }

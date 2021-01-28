@@ -2,6 +2,7 @@ package com.shiro.logical.shiro;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.shiro.common.util.EhCacheUtil;
+import com.shiro.common.util.JwtUtil;
 import com.shiro.logical.sys.dao.SysMenuMapper;
 import com.shiro.logical.sys.dao.SysRoleMapper;
 import com.shiro.logical.sys.dao.SysUserMapper;
@@ -19,6 +20,7 @@ import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -27,6 +29,7 @@ import java.util.*;
  * @Date 2020/12/17 15:34
  * @Description 系统安全认证类
  */
+@Component
 public class SystemRealm extends AuthorizingRealm {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -37,6 +40,17 @@ public class SystemRealm extends AuthorizingRealm {
     private SysRoleMapper sysRoleMapper;
     @Autowired
     private SysMenuMapper sysMenuMapper;
+
+    /**
+     * 使用JWT替代原生Token
+     * @param token
+     * @return
+     */
+    @Override
+    public boolean supports(AuthenticationToken token) {
+        return token != null && token instanceof JwtToken;
+    }
+
 
     /**
      * 授权 查询用户的所属权限
@@ -84,22 +98,28 @@ public class SystemRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         logger.info("-----------------------shiro认证-----------------------");
-        // 客户端传来的 username 和 password 会自动封装到 token
-        UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
+        String token = (String) authenticationToken.getCredentials();
+        if (token == null) {
+            throw new AuthenticationException("未检测到token，认证失败！");
+        }
+        // 验证token
+        JwtUtil jwtUtil = new JwtUtil();
+        if (!jwtUtil.verifyToken(token)) {
+            throw new AuthenticationException("token凭证错误或失效，请重新登录！");
+        }
         // 根据登录名或者手机号获取用户信息
+        String username = jwtUtil.analysisToken(token).get("subject").toString();
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag","0")
-                .eq("login_name", token.getUsername()).or().eq("phone", token.getUsername());
+        queryWrapper.eq("del_flag","0").eq("login_name", username).or().eq("phone", username);
         SysUser sysUser = sysUserMapper.selectOne(queryWrapper);
         if (Optional.ofNullable(sysUser).isPresent()) {
             if (sysUser.getIsForbidden().equals("1")) {
-                throw new DisabledAccountException("该帐号已被禁止登录，请联系系统管理员！");
+                throw new AuthenticationException("该帐号已被禁止登录，请联系系统管理员！");
             }
-            EhCacheUtil ehCacheUtil = EhCacheUtil.getInstance();
-            EhCacheUtil.put("userCache", token.getUsername(), sysUser);
-            return new SimpleAuthenticationInfo(token.getUsername(), sysUser.getPassword(), ByteSource.Util.bytes(sysUser.getLoginName()), this.getName());
+        } else {
+            throw new AuthenticationException("账号不存在，非法操作！");
         }
-        return null;
+        return new SimpleAuthenticationInfo(username, token, getName());
     }
 
 }

@@ -11,7 +11,7 @@
  Target Server Version : 80022
  File Encoding         : 65001
 
- Date: 22/01/2021 13:34:57
+ Date: 26/01/2021 15:11:05
 */
 
 SET NAMES utf8mb4;
@@ -133,8 +133,8 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES ('5ed01be45e434bb0a3b866cd88da37f7', 'admin', '928bfd2577490322a6e19b793691467e', '超级管理员', '15285326114', '1', '@qq.com', 1000000000, NULL, NULL, '0', NULL, NULL, NULL, '2021-01-21 13:01:44', NULL, NULL, '0');
-INSERT INTO `sys_user` VALUES ('5ed01be45e434bb0a3b866cd88da37f8', 'user', 'b8c2d5b0a37cc51f91d5e8970347a3a3', '普通用户', '15285326115', '1', '@qq.com', 1000000000, NULL, NULL, '0', NULL, NULL, NULL, '2021-01-21 13:01:44', NULL, NULL, '0');
+INSERT INTO `sys_user` VALUES ('5ed01be45e434bb0a3b866cd88da37f7', 'admin', '928bfd2577490322a6e19b793691467e', '超级管理员', '15285326224', '1', '888888888@qq.com', 1000000000, NULL, NULL, '0', NULL, NULL, NULL, '2021-01-21 13:01:44', NULL, NULL, '0');
+INSERT INTO `sys_user` VALUES ('5ed01be45e434bb0a3b866cd88da37f8', 'user', 'b8c2d5b0a37cc51f91d5e8970347a3a3', '普通用户', '15285326110', '1', '999999999@qq.com', 1000000000, NULL, NULL, '0', NULL, NULL, NULL, '2021-01-21 13:01:44', NULL, NULL, '0');
 
 -- ----------------------------
 -- Table structure for sys_user_role

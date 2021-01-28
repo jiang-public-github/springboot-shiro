@@ -37,8 +37,10 @@ public enum ResultCode {
     USER_LOGOUT_SUCCESS(3006, "退出成功!"),
     USER_NOT_EXIST(3007, "用户不存在!"),
     USER_HAS_EXISTED(3008, "用户已存在!"),
-    TOKEN_FAILURE(3009, "Token失效!"),
-    TOKEN_AUTHORIZATION(3010, "Token未授权!"),
+    TOKEN_ERROR(3009, "Token未授权或已失效!"),
+    SHIRO_AUTHENTICATION_FAILURE(3010, "认证失败!"),
+    SHIRO_UNAUTHORIZED(3011, "未授权，无此操作权限!"),
+    SHIRO_ACCESS_AUTHORITY(3012, "无访问权限!"),
 
     /* 4000 - 4999 app 或 pc的一些状态码 */
     SIGN_INVALID(4000, "签名无效!"),
