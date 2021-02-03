@@ -1,5 +1,6 @@
 package com.shiro.common.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -55,9 +56,12 @@ public class BasicsUtils {
      */
     public static String simpleHash(String password, String salt){
         // algorithmName：加密方式, source：明文, salt：盐：为了即使相同的密码不同的盐加密后的结果也不同防破解, hashIterations：加密次数
+//        Md5Hash reMd5Hash = new Md5Hash(password, ByteSource.Util.bytes(salt), 2);
         SimpleHash result = new SimpleHash(Md5Hash.ALGORITHM_NAME, password, ByteSource.Util.bytes(salt), 2);
         return result.toString();
     }
+
+
 
     public static void main(String[] args) {
         System.out.println(simpleHash("123456","admin"));

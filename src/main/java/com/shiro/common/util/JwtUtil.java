@@ -24,6 +24,10 @@ import java.util.UUID;
 public class JwtUtil {
     private static Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
+    /*JWT无状态的，服务器端不用存储token也可完成token验证，用JWT的本意就是为了不和数据库交互。
+    token是识别客户端身份的唯一标示，万一系统内定密钥泄露，任何人就都有可能模拟用户登录了。
+    如果系统是一个很重要的系统， 可以用JWT + RSA非对称加密对token进行加解密，RSA优点：安全，难以破解，缺点：算法比较耗时*/
+
     /**
      * 生成token秘钥
      */
